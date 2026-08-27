@@ -129,3 +129,267 @@
         clickBtn.disabled = false;
     }
 </script>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Clicker v2.0</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2a2a2a;
+            --text-color: #ffffff;
+            --btn-bg: #2196f3;
+        }
+
+        .light-theme {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --btn-bg: #008cba;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            width: 320px;
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn, .theme-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .light-theme .mode-btn, .light-theme .theme-btn {
+            background: #ddd;
+            color: #333;
+        }
+
+        .high-score {
+            font-size: 0.9rem;
+            color: #ffca28;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4caf50;
+            margin: 10px 0;
+        }
+
+        .rank {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff9800;
+            min-height: 1.5em;
+        }
+
+        .click-btn {
+            background-color: var(--btn-bg);
+            color: white;
+            border: none;
+            padding: 25px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 140px;
+            height: 140px;
+            margin: 15px 0;
+            transition: transform 0.05s;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .click-btn:active {
+            transform: scale(0.92);
+        }
+
+        .click-btn:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Uçan +1 Efekti */
+        .floating-text {
+            position: absolute;
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-40px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-bar">
+        <button class="theme-btn" onclick="toggleTheme()">🎨 Tema</button>
+        <div>
+            <button class="mode-btn" onclick="setMode(5)">5s</button>
+            <button class="mode-btn" onclick="setMode(10)">10s</button>
+        </div>
+    </div>
+
+    <div class="high-score" id="highScore">En Yüksek Skor: 0</div>
+    <div class="timer" id="timer">Süre: 5.0s</div>
+    <div class="score" id="score">0</div>
+    <div class="rank" id="rank"></div>
+
+    <button class="click-btn" id="clickBtn" onclick="handleClick(event)">TIKLA!</button>
+    <br>
+    <button class="reset-btn" onclick="resetGame()">Yeniden Başlat</button>
+</div>
+
+<script>
+    let clicks = 0;
+    let selectedTime = 5;
+    let timeLeft = 5.0;
+    let timerInterval = null;
+    let gameActive = false;
+    let gameEnded = false;
+    let highScore = localStorage.getItem('clickerHighScore') || 0;
+
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const clickBtn = document.getElementById('clickBtn');
+    const rankDisplay = document.getElementById('rank');
+    const highScoreDisplay = document.getElementById('highScore');
+
+    highScoreDisplay.textContent = `En Yüksek Skor: ${highScore}`;
+
+    function setMode(seconds) {
+        if (gameActive) return;
+        selectedTime = seconds;
+        resetGame();
+    }
+
+    function handleClick(event) {
+        if (gameEnded) return;
+
+        if (!gameActive) {
+            gameActive = true;
+            timerInterval = setInterval(updateTimer, 100);
+        }
+
+        clicks++;
+        scoreDisplay.textContent = clicks;
+        createFloatingText(event);
+    }
+
+    function createFloatingText(e) {
+        const text = document.createElement('div');
+        text.className = 'floating-text';
+        text.textContent = '+1';
+        text.style.left = `${e.clientX - 15}px`;
+        text.style.top = `${e.clientY - 20}px`;
+        document.body.appendChild(text);
+
+        setTimeout(() => text.remove(), 600);
+    }
+
+    function updateTimer() {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            endGame();
+        }
+        timerDisplay.textContent = `Süre: ${timeLeft.toFixed(1)}s`;
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        gameActive = false;
+        gameEnded = true;
+        clickBtn.disabled = true;
+        timerDisplay.textContent = "Süre Doldu!";
+        
+        // Unvan Belirleme
+        const cps = clicks / selectedTime;
+        let rankText = "";
+        
+        if (cps < 3) rankText = "Kaplumbağa 🐢";
+        else if (cps < 5) rankText = "Hızlı Parmak ⚡";
+        else if (cps < 7) rankText = "Şimşek Tıklayıcı 🚀";
+        else rankText = "Robot musun?! 🤖";
+
+        rankDisplay.textContent = rankText;
+
+        // Rekor Kaydı
+        if (clicks > highScore) {
+            highScore = clicks;
+            localStorage.setItem('clickerHighScore', highScore);
+            highScoreDisplay.textContent = `En Yüksek Skor: ${highScore} (YENİ REKOR!)`;
+        }
+    }
+
+    function resetGame() {
+        clearInterval(timerInterval);
+        clicks = 0;
+        timeLeft = selectedTime;
+        gameActive = false;
+        gameEnded = false;
+        
+        scoreDisplay.textContent = '0';
+        timerDisplay.textContent = `Süre: ${selectedTime.toFixed(1)}s`;
+        rankDisplay.textContent = '';
+        clickBtn.disabled = false;
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+    }
+</script>
+
+</body>
+</html>
