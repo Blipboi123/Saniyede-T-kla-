@@ -1,0 +1,131 @@
+<<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5 Saniye Clicker Oyunu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #2a2a2a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            width: 300px;
+        }
+        .timer {
+            font-size: 1.2rem;
+            color: #ffca28;
+            margin-bottom: 10px;
+        }
+        .score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #4caf50;
+        }
+        .click-btn {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            user-select: none;
+            width: 100%;
+        }
+        .click-btn:active {
+            transform: scale(0.95);
+        }
+        .click-btn:disabled {
+            background-color: #555555;
+            cursor: not-allowed;
+        }
+        .reset-btn {
+            margin-top: 20px;
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>5 Saniye Clicker</h2>
+    <div class="timer" id="timer">Süre: 5.0s</div>
+    <div class="score" id="score">0</div>
+    <button class="click-btn" id="clickBtn" onclick="handleClick()">Tıkla!</button>
+    <br>
+    <button class="reset-btn" id="resetBtn" onclick="resetGame()">Tekrar Dene</button>
+</div>
+
+<script>
+    let clicks = 0;
+    let timeLeft = 5.0;
+    let timerInterval = null;
+    let gameActive = false;
+    let gameEnded = false;
+
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const clickBtn = document.getElementById('clickBtn');
+
+    function handleClick() {
+        if (gameEnded) return;
+
+        // İlk tıklamada süreyi başlat
+        if (!gameActive) {
+            gameActive = true;
+            timerInterval = setInterval(updateTimer, 100);
+        }
+
+        clicks++;
+        scoreDisplay.textContent = clicks;
+    }
+
+    function updateTimer() {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            endGame();
+        }
+        timerDisplay.textContent = `Süre: ${timeLeft.toFixed(1)}s`;
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        gameActive = false;
+        gameEnded = true;
+        clickBtn.disabled = true;
+        timerDisplay.textContent = "Süre Doldu!";
+    }
+
+    function resetGame() {
+        clearInterval(timerInterval);
+        clicks = 0;
+        timeLeft = 5.0;
+        gameActive = false;
+        gameEnded = false;
+        
+        scoreDisplay.textContent = '0';
+        timerDisplay.textContent = 'Süre: 5.0s';
+        clickBtn.disabled = false;
+    }
+</script>
